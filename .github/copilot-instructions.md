@@ -1,49 +1,22 @@
-# GitHub Copilot Instructions
+# GitHub Copilot コードレビュー指示
 
-## プロジェクト概要
-- 目的: ステータスが Failed となった systemd サービスを Discord に通知する
-- 主な機能:
-  - `systemctl` コマンドで Failed 状態のサービスを検知
-  - Discord Bot API を使用して通知
-  - Failed から復帰したサービスの通知
-- 対象ユーザー: Linux サーバー管理者
+`report-failed-services` は systemctl で Failed となったサービスを検知し Discord に通知する Python ツールです。レビュー時は以下を基準にしてください。
 
-## 共通ルール
-- 会話は日本語で行う。
-- PR とコミットは Conventional Commits に従う。
-  - 形式: `<type>(<scope>): <description>`
-  - `<description>` は日本語で記載
-- 日本語と英数字の間には半角スペースを入れる。
+## 強制されている規約
 
-## 技術スタック
-- 言語: Python 3.x
-- 依存ライブラリ: `python-dotenv`, `requests`
-- ツール: `flake8`
+- **Lint**: CI は `flake8 . --count --select=E1,E2,E3,E4,E7,E9,W1,W2,W3,W4,W5,F63,F7,F82 --show-source --statistics` を実行する。この select 範囲のエラーが残る変更は指摘する。
+- **コミット/PR**: Conventional Commits (`<type>(<scope>): <description>`)。description は日本語。
+- **表記**: 日本語と英数字の間に半角スペースを入れる。
+- **docstring**: 関数・クラスには日本語で docstring を記述する。
 
-## コーディング規約
-- フォーマット: `flake8` のルールに従う
-- 命名規則: Python の標準的な命名規則 (PEP 8 準拠)
-- ドキュメント: 関数やクラスには日本語で docstring を記述する
+## 重点的に確認する点
 
-## 開発コマンド
-```bash
-# 依存関係のインストール
-pip install -U -r requirements.txt
+- **機密情報**: `DISCORD_TOKEN` などの認証情報がハードコード・コミットされていないか。ログにトークンやチャンネル ID を出力していないか。
+- **エラーハンドリング**: `systemctl` の実行結果や Discord API 呼び出し (`requests`) の失敗を握りつぶしていないか。
+- **状態管理**: `notified_ids.json` の読み書きで通知の重複・欠落を招く変更がないか。
 
-# Lint (CI と同様の設定)
-flake8 . --count --select=E1,E2,E3,E4,E7,E9,W1,W2,W3,W4,W5,F63,F7,F82 --show-source --statistics
+## 誤検知しやすい既知パターン (フラグ不要)
 
-# 実行 (ローカル)
-python3 -m src
-```
-
-## テスト方針
-- 現状、自動テストコード (`tests/` など) は存在しないため、動作確認は実機または手動で行う。
-
-## セキュリティ / 機密情報
-- `DISCORD_TOKEN` などの認証情報は `.env` ファイルで管理し、絶対にコミットしない。
-- ログにトークンやチャンネル ID を出力しない。
-
-## リポジトリ固有
-- Systemd の状態に依存するため、Linux 環境 (Systemd 使用) での動作が前提。
-- `SystemdFiles/` ディレクトリに systemd 用のユニットファイルが含まれている。
+- **自動テストの不在**: `tests/` は存在しない。テストファイルの追加を一律に要求しない (動作確認は実機/手動)。
+- **`subprocess` + `shell=True`**: `systemctl` 呼び出しは固定文字列であり意図的。ユーザー入力を渡していない限りインジェクションとして指摘しない。
+- **Linux/Systemd 前提**: クロスプラットフォーム対応の欠如は指摘しない。本ツールは Systemd 稼働の Linux 環境専用。
