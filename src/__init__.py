@@ -36,23 +36,17 @@ logger = init_logger()
 
 
 def send_to_discord(token, channelId, message, embed=None, files=None):
-    if files is None:
-        files = {}
     headers = {
         "Authorization": "Bot {token}".format(token=token),
         "User-Agent": "Bot"
     }
-    params = {
-        "payload_json": json.dumps({
-            "content": message,
-            "embed": embed
-        })
-    }
-    response = requests.post(
-        "https://discord.com/api/channels/{channelId}/messages".format(channelId=channelId), headers=headers,
-        data=params, files=files)
-    print(response.status_code)
-    print(response.json())
+    payload = {"content": message, "embeds": [embed] if embed is not None else []}
+    url = "https://discord.com/api/channels/{channelId}/messages".format(channelId=channelId)
+    if files:
+        response = requests.post(url, headers=headers, data={"payload_json": json.dumps(payload)}, files=files)
+    else:
+        response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
 
 
 def load_notified_ids() -> list:
