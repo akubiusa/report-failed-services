@@ -41,7 +41,9 @@ if __name__ == "__main__":
         print("sub_status", sub_status)
         print("description", description)
 
-        service_status = subprocess.check_output("/usr/bin/journalctl -u " + service_name + " -n 10 -l --no-pager", shell=True, universal_newlines=True)
+        service_status = subprocess.check_output(
+            ["/usr/bin/journalctl", "-u", service_name, "-n", "10", "-l", "--no-pager"],
+            universal_newlines=True)
 
         send_to_discord(config.DISCORD_TOKEN, config.DISCORD_CHANNEL_ID, "", {
             "title": service_name,
