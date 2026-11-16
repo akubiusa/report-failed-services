@@ -34,6 +34,8 @@ def init_logger(child_name: str = None) -> logging.Logger:
 
 logger = init_logger()
 
+DISCORD_TIMEOUT = (5, 15)  # (connect, read) seconds
+
 
 def send_to_discord(token, channelId, message, embed=None, files=None):
     headers = {
@@ -43,9 +45,9 @@ def send_to_discord(token, channelId, message, embed=None, files=None):
     payload = {"content": message, "embeds": [embed] if embed is not None else []}
     url = "https://discord.com/api/channels/{channelId}/messages".format(channelId=channelId)
     if files:
-        response = requests.post(url, headers=headers, data={"payload_json": json.dumps(payload)}, files=files)
+        response = requests.post(url, headers=headers, data={"payload_json": json.dumps(payload)}, files=files, timeout=DISCORD_TIMEOUT)
     else:
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, headers=headers, json=payload, timeout=DISCORD_TIMEOUT)
     response.raise_for_status()
 
 

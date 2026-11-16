@@ -9,6 +9,7 @@ WorkingDirectory=%WorkingDirectory%
 ExecStart=%WorkingDirectory%/venv/bin/python -m src
 Restart=no
 Type=oneshot
+TimeoutStartSec=600
 
 [Install]
 WantedBy=multi-user.target
