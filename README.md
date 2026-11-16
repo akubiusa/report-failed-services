@@ -20,7 +20,13 @@ The installer rewrites `SystemdFiles/report-failed-services.service` in place wi
 The service runs `venv/bin/python -m src` as root, so the virtual environment from step 2 is required.
 The timer runs it every 30 minutes (at minutes 00 and 30).
 
+Each Discord request times out after 5 seconds to connect or 15 seconds without a response, and systemd stops a run that takes longer than 10 minutes (`TimeoutStartSec=600`), so a stalled request cannot block later timer runs.
+A notification that fails this way is retried on the next run.
+After updating an existing installation, run `bash SystemdFiles/install-systemd.sh` again (or copy the unit file to `/etc/systemd/system/` and run `systemctl daemon-reload`) to apply the runtime limit.
+
 To run it manually from the repository root: `python3 -m src`
+
+To run the tests from the repository root: `python3 -m unittest discover -s tests`
 
 ## Configuration
 
